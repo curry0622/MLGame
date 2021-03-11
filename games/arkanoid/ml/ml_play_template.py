@@ -26,7 +26,7 @@ class MLPlay:
             self.ball_served = True
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
-            command = "SERVE_TO_LEFT"
+            command = "NONE"
         else:
             self.curr_x = scene_info["ball"][0]
             self.curr_y = scene_info["ball"][1]
@@ -39,28 +39,18 @@ class MLPlay:
                 command = "MOVE_LEFT"
             else:
                 command = "NONE"
-            print("predict: ", predict_x, "platform: ", scene_info["platform"][0])
             self.last_x = self.curr_x
             self.last_y = self.curr_y
-        print(command, scene_info["ball"])
         return command
 
     def predict(self):
-        # print(self.curr_y, self.last_y)
         if self.curr_y - self.last_y > 0:
             # dropping
-            # delta_x = self.curr_x - self.last_x
-            # delta_y = self.curr_y - self.last_y
-            # slope = abs(delta_y / delta_x)
-            # result = (200 - self.curr_y + slope * self.curr_x) / slope
             result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
-            # print("first predict: ", result)
             return self.correct(result)
-        # print("up")
         return -1
 
     def correct(self, result):
-        # print(result)
         if result >= 0 and result <= 200:
             return result
         elif result < 0:
