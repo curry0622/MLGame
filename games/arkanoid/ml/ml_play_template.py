@@ -8,6 +8,8 @@ class MLPlay:
         Constructor
         """
         self.ball_served = False
+        self.curr_x = 0
+        self.last_x = 0
 
     def update(self, scene_info):
         """
@@ -21,9 +23,16 @@ class MLPlay:
         if not self.ball_served:
             self.ball_served = True
             command = "SERVE_TO_LEFT"
+            self.last_x = scene_info["ball"][0]
         else:
-            command = "MOVE_LEFT"
-
+            self.curr_x = scene_info["ball"][0]
+            if self.curr_x - self.last_x > 0:
+                command = "MOVE_RIGHT"
+            elif self.curr_x - self.last_x < 0:
+                command = "MOVE_LEFT"
+            else:
+                command = "NONE"
+            self.last_x = scene_info["ball"][0]
         return command
 
     def reset(self):
