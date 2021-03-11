@@ -33,25 +33,28 @@ class MLPlay:
             predict_x = self.predict()
             if predict_x == -1:
                 command = "NONE"
-            elif predict_x > scene_info["platform"][0]:
+            elif predict_x >= scene_info["platform"][0] + 20:
                 command = "MOVE_RIGHT"
-            elif predict_x < scene_info["platform"][0]:
+            elif predict_x <= scene_info["platform"][0] + 20:
                 command = "MOVE_LEFT"
             else:
                 command = "NONE"
+            print("predict: ", predict_x, "platform: ", scene_info["platform"][0])
             self.last_x = self.curr_x
             self.last_y = self.curr_y
-        print(command)
+        print(command, scene_info["ball"])
         return command
 
     def predict(self):
         # print(self.curr_y, self.last_y)
         if self.curr_y - self.last_y > 0:
             # dropping
-            delta_x = self.curr_x - self.last_x
-            delta_y = self.curr_y - self.last_y
-            slope = delta_y / delta_x
-            result = (200 - self.curr_y + slope * self.curr_x) / slope
+            # delta_x = self.curr_x - self.last_x
+            # delta_y = self.curr_y - self.last_y
+            # slope = abs(delta_y / delta_x)
+            # result = (200 - self.curr_y + slope * self.curr_x) / slope
+            result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
+            # print("first predict: ", result)
             return self.correct(result)
         # print("up")
         return -1
