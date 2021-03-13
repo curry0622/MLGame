@@ -8,6 +8,10 @@ class MLPlay:
         Constructor
         """
         self.ball_served = False
+        self.curr_x = 0
+        self.curr_y = 0
+        self.last_x = 0
+        self.last_y = 0
 
     def update(self, scene_info):
         """
@@ -20,11 +24,59 @@ class MLPlay:
 
         if not self.ball_served:
             self.ball_served = True
-            command = "SERVE_TO_LEFT"
+
+            # update last position
+            self.last_x = scene_info["ball"][0]
+            self.last_y = scene_info["ball"][1]
+
+            command = "NONE"
         else:
-            command = "MOVE_LEFT"
+            # update current position
+            self.curr_x = scene_info["ball"][0]
+            self.curr_y = scene_info["ball"][1]
+
+            predict = self.predict()
+            print(predict, (scene_info["platform"][0] + 20))
+
+            if predict == -1:
+                command = "NONE"
+            elif predict > scene_info["platform"][0] + 20:
+                command = "MOVE_RIGHT"
+            elif predict < scene_info["platform"][0] + 20:
+                command = "MOVE_LEFT"
+            else:
+                command = "NONE"
+
+            # update last position
+            self.last_x = self.curr_x
+            self.last_y = self.curr_y
 
         return command
+
+    def predict(self):
+        # upward
+        if self.curr_y < self.last_y:
+            result = self.curr_x - (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
+            return self.correct(result)
+
+        # downward
+        if self.curr_y > self.last_y:
+            result = self.curr_x + (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
+            return self.correct(result)
+
+        # default
+        return -1
+
+    def correct(self, result):
+        # over left
+        if result < 0:
+            return self.correct(0 - result)
+
+        # over right
+        if result > 200:
+            return self.correct(200 - (result - 200))
+
+        return result
 
     def reset(self):
         """
