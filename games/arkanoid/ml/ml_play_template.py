@@ -52,10 +52,11 @@ class MLPlay:
             result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result)
         # flying up
-        if self.curr_x > self.last_x and self.curr_y >= 300:
-            return 150
-        if self.curr_x < self.last_x and self.curr_y >= 300:
-            return 50
+        return (self.scene_info["platform"][0] + self.curr_x) / 2 if self.curr_y >= 320 else -1
+        # if self.curr_x > self.last_x and self.curr_y >= 300:
+        #     return 150
+        # if self.curr_x < self.last_x and self.curr_y >= 300:
+        #     return 50
         return -1
 
     def correct(self, result):
