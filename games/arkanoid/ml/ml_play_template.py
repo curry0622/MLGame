@@ -44,10 +44,15 @@ class MLPlay:
         return command
 
     def predict(self):
+        # dropping
         if self.curr_y - self.last_y > 0:
-            # dropping
             result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result)
+        # flying up
+        if self.curr_x > self.last_x:
+            return 150
+        if self.curr_x < self.last_x:
+            return 50
         return -1
 
     def correct(self, result):
