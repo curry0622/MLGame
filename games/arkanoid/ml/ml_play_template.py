@@ -27,7 +27,7 @@ class MLPlay:
             self.ball_served = True
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
-            command = "SERVE_TO_RIGHT"
+            command = "SERVE_TO_LEFT"
         else:
             self.scene_info = scene_info
             self.curr_x = scene_info["ball"][0]
@@ -52,11 +52,13 @@ class MLPlay:
             result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result)
         # flying up
-        return (self.scene_info["platform"][0] + self.curr_x) / 2 if self.curr_y >= 320 else -1
+        # return (self.scene_info["platform"][0] + self.curr_x) / 2 if self.curr_y >= 320 else -1
         # if self.curr_x > self.last_x and self.curr_y >= 300:
         #     return 150
         # if self.curr_x < self.last_x and self.curr_y >= 300:
         #     return 50
+        if self.curr_y - self.last_y < 0:
+            return self.upward_predict()
         return -1
 
     def correct(self, result):
@@ -104,6 +106,9 @@ class MLPlay:
                         return blk[0]
             return 0
 
+    def upward_predict(self):
+        result = self.curr_x - (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
+        return self.correct(result)
 
     def reset(self):
         """
