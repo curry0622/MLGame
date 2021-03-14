@@ -8,6 +8,7 @@ class MLPlay:
         Constructor
         """
         self.ball_served = False
+        self.scene_info = {}
         self.curr_x = 0
         self.curr_y = 0
         self.last_x = 0
@@ -31,7 +32,8 @@ class MLPlay:
 
             command = "SERVE_TO_LEFT"
         else:
-            # update current position
+            # update current information
+            self.scene_info = scene_info
             self.curr_x = scene_info["ball"][0]
             self.curr_y = scene_info["ball"][1]
 
@@ -67,6 +69,14 @@ class MLPlay:
 
         # default
         return -1
+
+    def find_wall(self):
+        def sort_by_first(elem):
+            return elem[0]
+
+        bricks_list = self.scene_info["bricks"] + self.scene_info["hard_bricks"]
+        bricks_list.sort(key=sort_by_first)
+        print(bricks_list)
 
     def correct(self, result):
         # over left
