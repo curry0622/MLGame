@@ -63,7 +63,7 @@ class MLPlay:
         # upward
         if self.curr_y < self.last_y:
             result = self.curr_x - (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
-            return self.correct(result, True)
+            return self.correct(result, False)
 
         # downward
         if self.curr_y > self.last_y:
