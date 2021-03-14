@@ -46,7 +46,7 @@ class MLPlay:
 
             if predict == -1:
                 command = "NONE"
-            elif predict > scene_info["platform"][0] - 5 and predict <= scene_info["platform"][0] + 40:
+            elif predict > scene_info["platform"][0] and predict <= scene_info["platform"][0] + 35:
                 command = "NONE"
             elif predict > scene_info["platform"][0] + 20 - 2.5:
                 command = "MOVE_RIGHT"
@@ -67,10 +67,10 @@ class MLPlay:
             result = self.curr_x - (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
             # right
             if self.curr_x > self.last_x:
-                result = self.scene_info["platform"][0] + 41 if result <= self.scene_info["platform"][0] + 40 else result
+                result = self.scene_info["platform"][0] + 36 if result <= self.scene_info["platform"][0] + 35 else result
             # left
             if self.curr_x < self.last_x:
-                result = self.scene_info["platform"][0] - 6 if result <= self.scene_info["platform"][0] - 5 else result
+                result = self.scene_info["platform"][0] - 1 if result <= self.scene_info["platform"][0]  else result
             return self.correct(result, False)
 
         # downward
