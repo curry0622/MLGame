@@ -29,14 +29,14 @@ class MLPlay:
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
 
-            command = "NONE"
+            command = "SERVE_TO_LEFT"
         else:
             # update current position
             self.curr_x = scene_info["ball"][0]
             self.curr_y = scene_info["ball"][1]
 
             predict = self.predict()
-            print(predict, (scene_info["platform"][0] + 20))
+            print(predict)
 
             if predict == -1:
                 command = "NONE"
@@ -61,7 +61,8 @@ class MLPlay:
 
         # downward
         if self.curr_y > self.last_y:
-            result = self.curr_x + (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
+            # result = self.curr_x + (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
+            result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result)
 
         # default
