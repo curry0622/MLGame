@@ -33,7 +33,7 @@ class MLPlay:
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
 
-            command = "SERVE_TO_RIGHT"
+            command = "SERVE_TO_LEFT"
         else:
             # update current information
             self.scene_info = scene_info
@@ -46,9 +46,11 @@ class MLPlay:
 
             if predict == -1:
                 command = "NONE"
-            elif predict > scene_info["platform"][0] + 20:
+            elif predict > scene_info["platform"][0] - 5 and predict <= scene_info["platform"][0] + 40:
+                command = "NONE"
+            elif predict > scene_info["platform"][0] + 20 - 2.5:
                 command = "MOVE_RIGHT"
-            elif predict < scene_info["platform"][0] + 20:
+            elif predict < scene_info["platform"][0] + 20 - 2.5:
                 command = "MOVE_LEFT"
             else:
                 command = "NONE"
@@ -62,13 +64,19 @@ class MLPlay:
     def predict(self):
         # upward
         if self.curr_y < self.last_y:
-            result = self.curr_x - (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
+            result = self.curr_x - (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
+            # right
+            if self.curr_x > self.last_x:
+                result = self.scene_info["platform"][0] + 41 if result <= self.scene_info["platform"][0] + 40 else result
+            # left
+            if self.curr_x < self.last_x:
+                result = self.scene_info["platform"][0] - 6 if result <= self.scene_info["platform"][0] - 5 else result
             return self.correct(result, False)
 
         # downward
         if self.curr_y > self.last_y:
-            # result = self.curr_x + (399 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
-            result = ((self.curr_x - self.last_x) * (399 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
+            # result = self.curr_x + (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
+            result = ((self.curr_x - self.last_x) * (395 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result, True)
 
         # default
@@ -87,14 +95,14 @@ class MLPlay:
             bricks_list.sort(key=sort_by_first)
             for brick in bricks_list:
                 if brick[0] >= self.curr_x:
-                    collide_x = brick[0]
+                    collide_x = brick[0] - 5
                     collide_y = (collide_x - self.curr_x) * (self.curr_y - self.last_y) / (self.curr_x - self.last_x) + self.curr_y
                     if brick[1] >= collide_y and brick[1] <= collide_y + 10:
                         print("right: ", collide_x)
                         return collide_x
                     # print("brick: ", brick, ", but collide range: ", collide_y, " ~ ", collide_y + 10)
-            print("wall: ", 200)
-            return 200
+            print("wall: ", 195)
+            return 195
 
         # moving left
         if self.curr_x < self.last_x:
@@ -131,8 +139,8 @@ class MLPlay:
                 return self.correct(0 - result, False)
 
             # over right boundary
-            if result > 200:
-                return self.correct(200 - (result - 200), False)
+            if result > 195:
+                return self.correct(195 - (result - 195), False)
 
             return result
 
