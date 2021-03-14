@@ -39,10 +39,8 @@ class MLPlay:
             self.scene_info = scene_info
             self.curr_x = scene_info["ball"][0]
             self.curr_y = scene_info["ball"][1]
-            print("ball: ", scene_info["ball"])
 
             predict = self.predict()
-            print("predict: ", predict)
 
             if predict == -1:
                 command = "NONE"
@@ -75,7 +73,6 @@ class MLPlay:
 
         # downward
         if self.curr_y > self.last_y:
-            # result = self.curr_x + (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.curr_y - self.last_y)
             result = ((self.curr_x - self.last_x) * (395 - self.curr_y)) / (self.curr_y - self.last_y) + self.curr_x
             return self.correct(result, True)
 
@@ -98,10 +95,7 @@ class MLPlay:
                     collide_x = brick[0] - 5
                     collide_y = (collide_x - self.curr_x) * (self.curr_y - self.last_y) / (self.curr_x - self.last_x) + self.curr_y
                     if brick[1] >= collide_y and brick[1] <= collide_y + 10:
-                        print("right: ", collide_x)
                         return collide_x
-                    # print("brick: ", brick, ", but collide range: ", collide_y, " ~ ", collide_y + 10)
-            print("wall: ", 195)
             return 195
 
         # moving left
@@ -112,9 +106,7 @@ class MLPlay:
                     collide_x = brick[0] + 25
                     collide_y = (collide_x - self.curr_x) * (self.curr_y - self.last_y) / (self.curr_x - self.last_x) + self.curr_y
                     if brick[1] >= collide_y and brick[1] <= collide_y + 10:
-                        print("left: ", collide_x)
                         return collide_x
-            print("wall: ", 0)
             return 0
 
     def correct(self, result, first_time):
