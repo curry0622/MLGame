@@ -145,13 +145,13 @@ if __name__ == "__main__":
         if curr_info['ball'][0] > last_info['ball'][0] and curr_info['ball'][1] > last_info['ball'][1]:
             # (+, +)
             direction.append(1)
-        if curr_info['ball'][0] < last_info['ball'][0] and curr_info['ball'][1] > last_info['ball'][1]:
+        elif curr_info['ball'][0] < last_info['ball'][0] and curr_info['ball'][1] > last_info['ball'][1]:
             # (-, +)
             direction.append(2)
-        if curr_info['ball'][0] < last_info['ball'][0] and curr_info['ball'][1] < last_info['ball'][1]:
+        elif curr_info['ball'][0] < last_info['ball'][0] and curr_info['ball'][1] < last_info['ball'][1]:
             # (-, -)
             direction.append(3)
-        if curr_info['ball'][0] > last_info['ball'][0] and curr_info['ball'][1] < last_info['ball'][1]:
+        else:
             # (+, -)
             direction.append(4)
 
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         curr_y,
         last_x,
         last_y,
-        # direction
+        direction,
         platform_x,
         predict_x
     ])
