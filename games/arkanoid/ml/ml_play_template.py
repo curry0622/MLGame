@@ -2,9 +2,6 @@
 The template of the main script of the machine learning process
 """
 
-from pygame.mixer import pre_init
-
-
 class MLPlay:
     def __init__(self):
         """
