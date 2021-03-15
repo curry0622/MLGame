@@ -33,7 +33,7 @@ class MLPlay:
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
 
-            command = "SERVE_TO_LEFT"
+            command = "SERVE_TO_RIGHT"
         else:
             # update current information
             self.scene_info = scene_info
@@ -41,6 +41,7 @@ class MLPlay:
             self.curr_y = scene_info["ball"][1]
 
             predict = self.predict()
+            print(predict)
 
             if predict == -1:
                 command = "NONE"
@@ -62,6 +63,11 @@ class MLPlay:
     def predict(self):
         # upward
         if self.curr_y < self.last_y:
+            # ceiling doesn't exist
+            if not self.find_ceiling():
+                return -1
+
+            # ceiling exists
             result = self.curr_x - (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
             # right
             if self.curr_x > self.last_x:
@@ -109,10 +115,40 @@ class MLPlay:
                         return collide_x
             return 0
 
+    def find_ceiling(self):
+        # sort method
+        def sort_by_first(elem):
+            return elem[0]
+
+        # sort bricks list
+        bricks_list = self.scene_info["bricks"] + self.scene_info["hard_bricks"]
+
+        # flying right
+        if self.curr_x > self.last_x:
+            bricks_list.sort(key=sort_by_first)
+            for brick in bricks_list:
+                if brick[0] >= self.curr_x and brick[1] <= self.curr_y:
+                    collide_y = brick[1] + 10
+                    collide_x = (self.curr_x - self.last_x) * (self.curr_y - collide_y) / (self.last_y - self.curr_y) + self.curr_x
+                    if brick[0] >= collide_x - 25 - 5 and brick[0] < collide_x:
+                        return True
+
+        # flying left
+        if self.curr_x < self.last_x:
+            bricks_list.sort(key=sort_by_first, reverse=True)
+            for brick in bricks_list:
+                if brick[0] + 25 <= self.curr_x and brick[1] <= self.curr_y:
+                    collide_y = brick[1] + 10
+                    collide_x = (self.curr_x - self.last_x) * (self.curr_y - collide_y) / (self.last_y - self.curr_y) + self.curr_x
+                    if brick[0] >= collide_x - 25 - 5 and brick[0] < collide_x:
+                        return True
+        return False
+
     def correct(self, result, first_time):
         if first_time:
             # get wall value
             wall = self.find_wall()
+            print("wall: ", wall)
 
             # moving right
             if self.curr_x > self.last_x:
