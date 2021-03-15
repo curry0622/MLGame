@@ -41,7 +41,6 @@ class MLPlay:
             self.curr_y = scene_info["ball"][1]
 
             predict = self.predict()
-            print(predict)
 
             if predict == -1:
                 command = "NONE"
@@ -65,7 +64,11 @@ class MLPlay:
         if self.curr_y < self.last_y:
             # ceiling doesn't exist
             if not self.find_ceiling():
-                return -1
+                return 80
+
+            # if ball is too high
+            if self.curr_y <= 200:
+                return 80
 
             # ceiling exists
             result = self.curr_x - (395 - self.curr_y) * (self.last_x - self.curr_x) / (self.last_y - self.curr_y)
@@ -97,10 +100,10 @@ class MLPlay:
         if self.curr_x > self.last_x:
             bricks_list.sort(key=sort_by_first)
             for brick in bricks_list:
-                if brick[0] >= self.curr_x:
+                if brick[0] >= self.curr_x + 5 and brick[1] >= self.curr_y + 5:
                     collide_x = brick[0] - 5
                     collide_y = (collide_x - self.curr_x) * (self.curr_y - self.last_y) / (self.curr_x - self.last_x) + self.curr_y
-                    if brick[1] >= collide_y and brick[1] <= collide_y + 10:
+                    if collide_y >= brick[1] - 5 and collide_y < brick[1] + 10:
                         return collide_x
             return 195
 
@@ -108,10 +111,10 @@ class MLPlay:
         if self.curr_x < self.last_x:
             bricks_list.sort(key=sort_by_first, reverse=True)
             for brick in bricks_list:
-                if brick[0] + 25 <= self.curr_x:
+                if brick[0] + 25 <= self.curr_x and brick[1] >= self.curr_y + 5:
                     collide_x = brick[0] + 25
                     collide_y = (collide_x - self.curr_x) * (self.curr_y - self.last_y) / (self.curr_x - self.last_x) + self.curr_y
-                    if brick[1] >= collide_y and brick[1] <= collide_y + 10:
+                    if collide_y >= brick[1] - 5 and collide_y <= brick[1] + 10:
                         return collide_x
             return 0
 
@@ -127,20 +130,20 @@ class MLPlay:
         if self.curr_x > self.last_x:
             bricks_list.sort(key=sort_by_first)
             for brick in bricks_list:
-                if brick[0] >= self.curr_x and brick[1] <= self.curr_y:
+                if brick[0] >= self.curr_x and brick[1] + 10 <= self.curr_y:
                     collide_y = brick[1] + 10
                     collide_x = (self.curr_x - self.last_x) * (self.curr_y - collide_y) / (self.last_y - self.curr_y) + self.curr_x
-                    if brick[0] >= collide_x - 25 - 5 and brick[0] < collide_x:
+                    if collide_x >= brick[0] - 5 and collide_x < brick[0] + 25:
                         return True
 
         # flying left
         if self.curr_x < self.last_x:
             bricks_list.sort(key=sort_by_first, reverse=True)
             for brick in bricks_list:
-                if brick[0] + 25 <= self.curr_x and brick[1] <= self.curr_y:
+                if brick[0] + 25 <= self.curr_x and brick[1] + 10 <= self.curr_y:
                     collide_y = brick[1] + 10
                     collide_x = (self.curr_x - self.last_x) * (self.curr_y - collide_y) / (self.last_y - self.curr_y) + self.curr_x
-                    if brick[0] >= collide_x - 25 - 5 and brick[0] < collide_x:
+                    if collide_x >= brick[0] - 5 and collide_x < brick[0] + 25:
                         return True
         return False
 
@@ -148,7 +151,6 @@ class MLPlay:
         if first_time:
             # get wall value
             wall = self.find_wall()
-            print("wall: ", wall)
 
             # moving right
             if self.curr_x > self.last_x:
