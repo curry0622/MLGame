@@ -177,8 +177,6 @@ if __name__ == "__main__":
         else:
             command_num.append(1)
 
-    # print(direction)
-
     numpy_data = np.array([
         curr_x,
         curr_y,
@@ -191,8 +189,6 @@ if __name__ == "__main__":
 
     X = np.transpose(numpy_data)
     y = command_num
-
-    # print(len(curr_x), len(curr_y))
 
     # train data
     from sklearn.neighbors import KNeighborsClassifier
