@@ -30,7 +30,7 @@ class MLPlay:
             self.last_x = scene_info["ball"][0]
             self.last_y = scene_info["ball"][1]
 
-            command = "SERVE_TO_RIGHT"
+            command = "SERVE_TO_LEFT"
         else:
             # update current information
             self.scene_info = scene_info
@@ -41,7 +41,7 @@ class MLPlay:
 
             if predict == -1:
                 command = "NONE"
-            elif predict > scene_info["platform"][0] and predict <= scene_info["platform"][0] + 35:
+            elif predict > scene_info["platform"][0] + 10 and predict <= scene_info["platform"][0] + 35 - 10:
                 command = "NONE"
             elif predict > scene_info["platform"][0] + 20 - 2.5:
                 command = "MOVE_RIGHT"
