@@ -2,6 +2,12 @@ import os
 import pickle
 import numpy as np
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import StratifiedShuffleSplit
+
 def predict(curr_x, curr_y, last_x, last_y, platform_x, bricks_list):
     # upward
         if curr_y < last_y:
@@ -116,7 +122,7 @@ if __name__ == "__main__":
     command = []
 
     for i in range(1, 21):
-        with open(os.path.join(os.path.dirname(__file__), './models/model' + str(i) + '.pickle'), 'rb') as f:
+        with open(os.path.join(os.path.dirname(__file__), './models/' + str(i) + '.pickle'), 'rb') as f:
             data = pickle.load(f)
             scene_info = scene_info + data['ml']['scene_info']
             command = command + data['ml']['command']
@@ -190,13 +196,37 @@ if __name__ == "__main__":
     X = np.transpose(numpy_data)
     y = command_num
 
-    # train data
-    from sklearn.neighbors import KNeighborsClassifier
+    # data division
+    x_train, x_test, y_train, y_test = train_test_split(
+        X,
+        y,
+        test_size=0.3,
+        random_state=9
+    )
 
-    model = KNeighborsClassifier(n_neighbors=3)
-    print(model.fit(X, y))
-    print(model.score(X, y))
+    # parameter interval
+    param_grid = {'n_neighbors': [1, 2, 3]}
+
+    # cross validation
+    cv = StratifiedShuffleSplit(n_splits=2, test_size=0.3, random_state=12)
+    grid = GridSearchCV(KNeighborsClassifier(), param_grid,
+                        cv=cv, verbose=10, n_jobs=-1)
+    grid.fit(x_train, y_train)
+    grid_predictions = grid.predict(x_test)
+
+    # print result
+    print("Best parameter: ")
+    print(grid.best_params_)
+    print()
+    print("Prediction: ")
+    print(grid_predictions)
+    print()
+    print("Confusion Matrix: ")
+    print(confusion_matrix(y_test, grid_predictions))
+    print()
+    print("Classification Report: ")
+    print(classification_report(y_test, grid_predictions))
 
     # store model
-    with open(os.path.join(os.path.dirname(__file__), 'model.pickle'), 'wb') as f:
-        pickle.dump(model, f)
+    with open(os.path.join(os.path.dirname(__file__), 'model_test.pickle'), 'wb') as f:
+        pickle.dump(grid, f)
