@@ -32,7 +32,6 @@ def point_slope_formula_return_x(point1, point2, y):
     delta_x = point2[0] - point1[0]
     delta_y = point2[1] - point1[1]
     new_delta_y = y - point2[1]
-    print("last", point1, "new", point2, "target", y, "result", delta_x * new_delta_y / delta_y + point2[0])
     return delta_x * new_delta_y / delta_y + point2[0]
 
 def point_slope_formula_return_y(point1, point2, x):
@@ -51,15 +50,12 @@ def correction(last_pos, new_pos, target_y):
     x = point_slope_formula_return_x(last_pos, new_pos, target_y)
     if x < 0:
         collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_LEFT_BOUND)
-        print("collide y", collide_y)
         delta_y = collide_y - last_pos[1]
         x = correction((GAME_LEFT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
     elif x > GAME_WIDTH - BALL_SIDE:
         collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_RIGHT_BOUND)
-        print("collide y", collide_y)
         delta_y = collide_y - last_pos[1]
         x = correction((GAME_RIGHT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
-    # else:
     return x
 
 
@@ -147,6 +143,10 @@ class MLPlay:
         """
         Return motion for the platform
         """
+        # if the ball is already out of top bottom bound, it means gameover
+        if self.scene_info["ball"][1] < GAME_TOP_BOUND or self.scene_info["ball"][1] > GAME_BOTTOM_BOUND:
+            return "NONE"
+
         self.predict()
         curr_x = self.scene_info["platform_1P"][0] if self.side == "1P" else self.scene_info["platform_2P"][0]
         if abs(curr_x + PLATFORM_HALF_WIDTH - self.predict_ball_x) < TREMBLE_WIDTH:
