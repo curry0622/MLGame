@@ -15,6 +15,7 @@ PLATFORM_HEIGHT = 30
 BLOCKER_WIDTH = 30
 BLOCKER_HALF_WIDTH = 15
 BLOCKER_HEIGHT = 20
+BLOCKER_HALF_HEIGHT = 10
 BLOCKER_TOP_BOUND = 240 - BALL_SIDE
 BLOCKER_BOTTOM_BOUND = 240 + BLOCKER_HEIGHT
 
@@ -33,6 +34,8 @@ def point_slope_formula_return_x(point1, point2, y):
     """
     Calculate x for specific y on the line
     """
+    if point1 == point2:
+        return point2[1]
     delta_x = point2[0] - point1[0]
     delta_y = point2[1] - point1[1]
     new_delta_y = y - point2[1]
@@ -42,6 +45,8 @@ def point_slope_formula_return_y(point1, point2, x):
     """
     Calculate x for specific y on the line
     """
+    if point1 == point2:
+        return point2[0]
     delta_x = point2[0] - point1[0]
     delta_y = point2[1] - point1[1]
     new_delta_x = x - point2[0]
@@ -136,6 +141,7 @@ class MLPlay:
                     self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), GAME_BOTTOM_BOUND)
                 else:
                     self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+            # if ball is flying down but it's above middle, first detect whether it'll collide with blocker's side or not
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
         # 2P is at the top
