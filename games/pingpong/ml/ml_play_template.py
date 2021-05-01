@@ -5,9 +5,6 @@ The template of the script for the machine learning process in game pingpong
 """
 Some constants for calculations
 """
-GAME_WIDTH = 200
-GAME_HALF_WIDTH = 100
-
 PLATFORM_WIDTH = 40
 PLATFORM_HALF_WIDTH = 20
 PLATFORM_HEIGHT = 30
@@ -20,6 +17,50 @@ BALL_SIDE = 5
 BALL_HALF_SIDE = 2.5
 
 TREMBLE_WIDTH = 5
+
+GAME_WIDTH = 200
+GAME_HALF_WIDTH = 100
+GAME_TOP_BOUND = 80
+GAME_BOTTOM_BOUND = 420 - BALL_SIDE
+GAME_RIGHT_BOUND = GAME_WIDTH - BALL_SIDE
+GAME_LEFT_BOUND = 0
+
+def point_slope_formula_return_x(point1, point2, y):
+    """
+    Calculate x for specific y on the line
+    """
+    delta_x = point2[0] - point1[0]
+    delta_y = point2[1] - point1[1]
+    new_delta_y = y - point2[1]
+    print("last", point1, "new", point2, "target", y, "result", delta_x * new_delta_y / delta_y + point2[0])
+    print(delta_x, "*", new_delta_y, "/", delta_y, "+", point2[0])
+    return delta_x * new_delta_y / delta_y + point2[0]
+
+def point_slope_formula_return_y(point1, point2, x):
+    """
+    Calculate x for specific y on the line
+    """
+    delta_x = point2[0] - point1[0]
+    delta_y = point2[1] - point1[1]
+    new_delta_x = x - point2[0]
+    return delta_y * new_delta_x / delta_x + point2[1]
+
+def correction(last_pos, new_pos, target_y):
+    """
+    Correction of ball's predict position
+    """
+    x = point_slope_formula_return_x(last_pos, new_pos, target_y)
+    # if x < 0:
+    #     collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_LEFT_BOUND)
+    #     delta_y = collide_y - last_pos[1]
+    #     x = correction((GAME_LEFT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
+    # elif x > GAME_WIDTH - BALL_SIDE:
+    #     collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_RIGHT_BOUND)
+    #     delta_y = collide_y - last_pos[1]
+    #     x = correction((GAME_RIGHT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
+    # else:
+    return x
+
 
 class MLPlay:
     def __init__(self, side):
@@ -38,7 +79,6 @@ class MLPlay:
         """
         self.scene_info = scene_info
         if self.scene_info["status"] != "GAME_ALIVE":
-            print(self.scene_info["ball_speed"])
             return "RESET"
 
         if not self.ball_served:
@@ -78,22 +118,26 @@ class MLPlay:
         """
         Predict ball position depends on side
         """
+        if self.last_ball == self.scene_info["ball"]:
+            self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+            return
+
         self.set_ball_dir()
 
         # 1P is at the bottom
         if self.side == "1P":
-            # if ball is flying up, reset predict_x of 1P to the middle
+            # if ball is flying up, reset predict_ball_x of 1P to the middle
             if self.ball_dir == 3 or self.ball_dir == 4:
-                self.predict_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+                self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
-                self.predict_x = self.scene_info["ball"][0]
+                self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
         # 2P is at the top
         else:
-            # if ball is flying down, reset predict_x of 2P to the middle
+            # if ball is flying down, reset predict_ball_x of 2P to the middle
             if self.ball_dir == 1 or self.ball_dir == 2:
-                self.predict_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+                self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
-                self.predict_x = self.scene_info["ball"][0]
+                self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
 
         # update last ball position
         self.last_ball = self.scene_info["ball"]
@@ -104,9 +148,9 @@ class MLPlay:
         """
         self.predict()
         curr_x = self.scene_info["platform_1P"][0] if self.side == "1P" else self.scene_info["platform_2P"][0]
-        if abs(curr_x + PLATFORM_HALF_WIDTH - self.predict_x) < TREMBLE_WIDTH:
+        if abs(curr_x + PLATFORM_HALF_WIDTH - self.predict_ball_x) < TREMBLE_WIDTH:
             return "NONE"
-        if (curr_x + PLATFORM_HALF_WIDTH) < self.predict_x:
+        if (curr_x + PLATFORM_HALF_WIDTH) < self.predict_ball_x:
             return "MOVE_RIGHT"
-        if (curr_x + PLATFORM_HALF_WIDTH) > self.predict_x:
+        if (curr_x + PLATFORM_HALF_WIDTH) > self.predict_ball_x:
             return "MOVE_LEFT"
