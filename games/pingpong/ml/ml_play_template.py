@@ -5,6 +5,9 @@ The template of the script for the machine learning process in game pingpong
 """
 Some constants for calculations
 """
+BALL_SIDE = 5
+BALL_HALF_SIDE = 2.5
+
 PLATFORM_WIDTH = 40
 PLATFORM_HALF_WIDTH = 20
 PLATFORM_HEIGHT = 30
@@ -12,14 +15,15 @@ PLATFORM_HEIGHT = 30
 BLOCKER_WIDTH = 30
 BLOCKER_HALF_WIDTH = 15
 BLOCKER_HEIGHT = 20
-
-BALL_SIDE = 5
-BALL_HALF_SIDE = 2.5
+BLOCKER_TOP_BOUND = 240 - BALL_SIDE
+BLOCKER_BOTTOM_BOUND = 240 + BLOCKER_HEIGHT
 
 TREMBLE_WIDTH = 5
 
 GAME_WIDTH = 200
 GAME_HALF_WIDTH = 100
+GAME_HEIGHT = 500
+GAME_HALF_HEIGHT = GAME_HEIGHT / 2
 GAME_TOP_BOUND = 80
 GAME_BOTTOM_BOUND = 420 - BALL_SIDE
 GAME_RIGHT_BOUND = GAME_WIDTH - BALL_SIDE
@@ -76,6 +80,7 @@ class MLPlay:
         """
         self.scene_info = scene_info
         if self.scene_info["status"] != "GAME_ALIVE":
+            print(self.scene_info["ball_speed"])
             return "RESET"
 
         if not self.ball_served:
@@ -125,13 +130,22 @@ class MLPlay:
         if self.side == "1P":
             # if ball is flying up, reset predict_ball_x of 1P to the middle
             if self.ball_dir == 3 or self.ball_dir == 4:
-                self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+                if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND:
+                    collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
+                    delta_x = collide_x - self.scene_info["ball"][0]
+                    self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), GAME_BOTTOM_BOUND)
+                else:
+                    self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
         # 2P is at the top
         else:
             # if ball is flying down, reset predict_ball_x of 2P to the middle
             if self.ball_dir == 1 or self.ball_dir == 2:
+                if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND:
+                    collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
+                    delta_x = collide_x - self.scene_info["ball"][0]
+                    self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), BLOCKER_TOP_BOUND)
                 self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
