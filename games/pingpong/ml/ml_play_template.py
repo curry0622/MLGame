@@ -33,7 +33,6 @@ def point_slope_formula_return_x(point1, point2, y):
     delta_y = point2[1] - point1[1]
     new_delta_y = y - point2[1]
     print("last", point1, "new", point2, "target", y, "result", delta_x * new_delta_y / delta_y + point2[0])
-    print(delta_x, "*", new_delta_y, "/", delta_y, "+", point2[0])
     return delta_x * new_delta_y / delta_y + point2[0]
 
 def point_slope_formula_return_y(point1, point2, x):
@@ -50,14 +49,16 @@ def correction(last_pos, new_pos, target_y):
     Correction of ball's predict position
     """
     x = point_slope_formula_return_x(last_pos, new_pos, target_y)
-    # if x < 0:
-    #     collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_LEFT_BOUND)
-    #     delta_y = collide_y - last_pos[1]
-    #     x = correction((GAME_LEFT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
-    # elif x > GAME_WIDTH - BALL_SIDE:
-    #     collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_RIGHT_BOUND)
-    #     delta_y = collide_y - last_pos[1]
-    #     x = correction((GAME_RIGHT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
+    if x < 0:
+        collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_LEFT_BOUND)
+        print("collide y", collide_y)
+        delta_y = collide_y - last_pos[1]
+        x = correction((GAME_LEFT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
+    elif x > GAME_WIDTH - BALL_SIDE:
+        collide_y = point_slope_formula_return_y(last_pos, new_pos, GAME_RIGHT_BOUND)
+        print("collide y", collide_y)
+        delta_y = collide_y - last_pos[1]
+        x = correction((GAME_RIGHT_BOUND, collide_y), (last_pos[0], last_pos[1] + 2 * delta_y), target_y)
     # else:
     return x
 
