@@ -5,6 +5,9 @@ The template of the script for the machine learning process in game pingpong
 """
 Some constants for calculations
 """
+GAME_WIDTH = 200
+GAME_HALF_WIDTH = 100
+
 PLATFORM_WIDTH = 40
 PLATFORM_HALF_WIDTH = 20
 PLATFORM_HEIGHT = 30
@@ -40,6 +43,10 @@ class MLPlay:
 
         if not self.ball_served:
             self.ball_served = True
+
+            # get first ball position
+            self.last_ball = self.scene_info["ball"]
+
             return "SERVE_TO_LEFT"
         else:
             return self.motion()
@@ -50,14 +57,46 @@ class MLPlay:
         """
         self.ball_served = False
 
+    def set_ball_dir(self):
+        """
+        Calculate and set direction of ball (1, 2, 3, 4 stands for coordinate system quadrant)
+        """
+        x = self.scene_info["ball"][0] - self.last_ball[0]
+        y = self.scene_info["ball"][1] - self.last_ball[1]
+        if x > 0 and y > 0:
+            self.ball_dir = 1
+        elif x < 0 and y > 0:
+            self.ball_dir = 2
+        elif x < 0 and y < 0:
+            self.ball_dir = 3
+        elif x > 0 and y < 0:
+            self.ball_dir = 4
+        else:
+            self.ball_dir = 0
+
     def predict(self):
         """
         Predict ball position depends on side
         """
+        self.set_ball_dir()
+
+        # 1P is at the bottom
         if self.side == "1P":
-            self.predict_x = 100 - BALL_HALF_SIDE
+            # if ball is flying up, reset predict_x of 1P to the middle
+            if self.ball_dir == 3 or self.ball_dir == 4:
+                self.predict_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+            else:
+                self.predict_x = self.scene_info["ball"][0]
+        # 2P is at the top
         else:
-            self.predict_x = 100 - BALL_HALF_SIDE
+            # if ball is flying down, reset predict_x of 2P to the middle
+            if self.ball_dir == 1 or self.ball_dir == 2:
+                self.predict_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+            else:
+                self.predict_x = self.scene_info["ball"][0]
+
+        # update last ball position
+        self.last_ball = self.scene_info["ball"]
 
     def motion(self):
         """
