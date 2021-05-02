@@ -19,7 +19,7 @@ BLOCKER_HALF_HEIGHT = 10
 BLOCKER_TOP_BOUND = 240 - BALL_SIDE
 BLOCKER_BOTTOM_BOUND = 240 + BLOCKER_HEIGHT
 
-TREMBLE_WIDTH = 5
+TREMBLE_WIDTH = 0
 
 GAME_WIDTH = 200
 GAME_HALF_WIDTH = 100
@@ -97,7 +97,7 @@ class MLPlay:
             # get first blocker position
             self.last_blocker = self.scene_info["blocker"]
 
-            return "SERVE_TO_LEFT"
+            return "SERVE_TO_RIGHT"
         else:
             return self.motion()
 
@@ -128,7 +128,7 @@ class MLPlay:
         """
         Detect whether the ball will collide with blocker or not
         """
-        ERROR_DISTANCE = 2 * abs(self.scene_info["ball_speed"][0])
+        ERROR_DISTANCE = abs(self.scene_info["ball_speed"][0])
         collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
         delta_frame = abs((GAME_HALF_HEIGHT - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
         displacement = 5 * delta_frame
@@ -142,7 +142,7 @@ class MLPlay:
             if collide_x > new_blocker_x - ERROR_DISTANCE and collide_x < new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE:
                 # print("collide range", (new_blocker_x - ERROR_DISTANCE, new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE), "collide_x", collide_x)
                 # print("current ball", self.scene_info["ball"])
-                # print("will collide")
+                # print("will collide=========")
                 return True
             # else:
                 # print("collide range", (new_blocker_x - ERROR_DISTANCE, new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE), "collide_x", collide_x)
@@ -156,7 +156,7 @@ class MLPlay:
             if collide_x > new_blocker_x - ERROR_DISTANCE and collide_x < new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE:
                 # print("collide range", (new_blocker_x - ERROR_DISTANCE, new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE), "collide_x", collide_x)
                 # print("current ball", self.scene_info["ball"])
-                # print("will collide")
+                # print("will collide=========")
                 return True
             # else:
             #     print("collide range", (new_blocker_x - ERROR_DISTANCE, new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE), "collide_x", collide_x)
@@ -179,7 +179,7 @@ class MLPlay:
             # if ball is flying up
             if self.ball_dir == 3 or self.ball_dir == 4:
                 # if ball is below middle, pretend it'll collide with blocker's bottom
-                if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND:
+                if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND and self.will_collide_with_blocker():
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
@@ -230,7 +230,7 @@ class MLPlay:
             # if ball is flying down
             if self.ball_dir == 1 or self.ball_dir == 2:
                 # if ball is above middle, pretend it'll collide with blocker's top
-                if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND:
+                if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND and self.will_collide_with_blocker():
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
