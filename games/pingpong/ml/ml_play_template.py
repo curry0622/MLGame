@@ -94,6 +94,9 @@ class MLPlay:
             # get first ball position
             self.last_ball = self.scene_info["ball"]
 
+            # get first blocker position
+            self.last_blocker = self.scene_info["blocker"]
+
             return "SERVE_TO_LEFT"
         else:
             return self.motion()
@@ -121,6 +124,35 @@ class MLPlay:
         else:
             self.ball_dir = 0
 
+    def will_collide_with_blocker(self):
+        """
+        Detect whether the ball will collide with blocker or not
+        """
+        collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
+        delta_frame = abs((GAME_HALF_HEIGHT - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
+        displacement = 5 * delta_frame
+        # print("collide_x", collide_x)
+        # blocker is currently moving right
+        if self.scene_info["blocker"][0] - self.last_blocker[0] > 0:
+            new_blocker_x = self.scene_info["blocker"][0] + displacement
+            if new_blocker_x > (GAME_WIDTH - BLOCKER_WIDTH):
+                new_blocker_x = (GAME_WIDTH - BLOCKER_WIDTH) - (new_blocker_x - (GAME_WIDTH - BLOCKER_WIDTH))
+            # print("new_blocker_x", new_blocker_x, "new_blocker_right_bound", new_blocker_x + BLOCKER_WIDTH)
+            if collide_x > new_blocker_x and collide_x < new_blocker_x + BLOCKER_WIDTH:
+                # print("will collide")
+                return True
+        # blocker is currently moving left
+        elif self.scene_info["blocker"][0] - self.last_blocker[0] < 0:
+            new_blocker_x = self.scene_info["blocker"][0] - displacement
+            if new_blocker_x < 0:
+                new_blocker_x = 0 - new_blocker_x
+            # print("new_blocker_x", new_blocker_x, "new_blocker_right_bound", new_blocker_x + BLOCKER_WIDTH)
+            ERROR_DISTANCE = abs(self.scene_info["ball_speed"][0])
+            if collide_x > new_blocker_x - ERROR_DISTANCE and collide_x < new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE:
+                # print("will collide")
+                return True
+        return False
+
     def predict(self):
         """
         Predict ball position depends on side
@@ -133,17 +165,24 @@ class MLPlay:
 
         # 1P is at the bottom
         if self.side == "1P":
-            # if ball is flying up, reset predict_ball_x of 1P to the middle
+            # if ball is flying up
             if self.ball_dir == 3 or self.ball_dir == 4:
+                # if ball is below middle, pretend it'll collider with blocker's bottom
                 if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND:
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
                     self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), GAME_BOTTOM_BOUND)
+                # if ball is above middle, reset it to middle
                 else:
                     self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
-            # if ball is flying down but it's above middle, first detect whether it'll collide with blocker's side or not
+            # if ball is flying down
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
+                # if ball is above middle
+                if self.scene_info["ball"][1] < GAME_HALF_HEIGHT and self.will_collide_with_blocker():
+                    collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
+                    delta_x = collide_x - self.predict_ball_x
+                    self.predict_ball_x = correction((collide_x, GAME_HALF_HEIGHT), (self.predict_ball_x + 2 * delta_x, GAME_BOTTOM_BOUND), GAME_BOTTOM_BOUND)
         # 2P is at the top
         else:
             # if ball is flying down, reset predict_ball_x of 2P to the middle
@@ -155,9 +194,17 @@ class MLPlay:
                 self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
+                # if ball is below middle
+                if self.scene_info["ball"][1] > GAME_HALF_HEIGHT and self.will_collide_with_blocker():
+                    collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
+                    delta_x = collide_x - self.predict_ball_x
+                    self.predict_ball_x = correction((collide_x, GAME_HALF_HEIGHT), (self.predict_ball_x + 2 * delta_x, GAME_BOTTOM_BOUND), GAME_TOP_BOUND)
 
         # update last ball position
         self.last_ball = self.scene_info["ball"]
+
+        # update last blocker position
+        self.last_blocker = self.scene_info["blocker"]
 
     def motion(self):
         """
