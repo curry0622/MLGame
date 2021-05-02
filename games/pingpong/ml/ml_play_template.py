@@ -167,17 +167,33 @@ class MLPlay:
         if self.side == "1P":
             # if ball is flying up
             if self.ball_dir == 3 or self.ball_dir == 4:
-                # if ball is below middle, pretend it'll collider with blocker's bottom
+                # if ball is below middle, pretend it'll collide with blocker's bottom
                 if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND:
+                    without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
                     self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), GAME_BOTTOM_BOUND)
+
+                    # if ball is flying to left top and will out of left bound, correct predict_x
+                    if self.ball_dir == 3 and without_correction_x < GAME_LEFT_BOUND:
+                        collide_left_bound_y = point_slope_formula_return_y(self.last_ball, self.scene_info["ball"], GAME_LEFT_BOUND)
+                        delta_x = collide_x - GAME_LEFT_BOUND
+                        self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (GAME_LEFT_BOUND + 2 * delta_x, collide_left_bound_y), GAME_BOTTOM_BOUND)
+
+                    # if ball is flying to right top and will out of right bound, correct predict_x
+                    if self.ball_dir == 4 and without_correction_x > GAME_RIGHT_BOUND:
+                        collide_right_bound_y = point_slope_formula_return_y(self.last_ball, self.scene_info["ball"], GAME_RIGHT_BOUND)
+                        delta_x = collide_x - GAME_RIGHT_BOUND
+                        self.predict_ball_x = correction((collide_x, BLOCKER_BOTTOM_BOUND), (GAME_RIGHT_BOUND + 2 * delta_x, collide_right_bound_y), GAME_BOTTOM_BOUND)
+                    # print(self.predict_ball_x)
+
                 # if ball is above middle, reset it to middle
                 else:
                     self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             # if ball is flying down
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
+                # print("correct prediction", self.predict_ball_x)
                 # if ball is above middle
                 if self.scene_info["ball"][1] < GAME_HALF_HEIGHT and self.will_collide_with_blocker():
                     collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
@@ -185,15 +201,31 @@ class MLPlay:
                     self.predict_ball_x = correction((collide_x, GAME_HALF_HEIGHT), (self.predict_ball_x + 2 * delta_x, GAME_BOTTOM_BOUND), GAME_BOTTOM_BOUND)
         # 2P is at the top
         else:
-            # if ball is flying down, reset predict_ball_x of 2P to the middle
+            # if ball is flying down
             if self.ball_dir == 1 or self.ball_dir == 2:
+                # if ball is above middle, pretend it'll collide with blocker's top
                 if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND:
+                    without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
-                    self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), BLOCKER_TOP_BOUND)
+                    self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (self.scene_info["ball"][0] + 2 * delta_x, self.scene_info["ball"][1]), GAME_TOP_BOUND)
+
+                    # if ball is flying to left bottom and will out of left bound, correct predict_x
+                    if self.ball_dir == 2 and without_correction_x < GAME_LEFT_BOUND:
+                        collide_left_bound_y = point_slope_formula_return_y(self.last_ball, self.scene_info["ball"], GAME_LEFT_BOUND)
+                        delta_x = collide_x - GAME_LEFT_BOUND
+                        self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (GAME_LEFT_BOUND + 2 * delta_x, collide_left_bound_y), GAME_TOP_BOUND)
+
+                    # if ball is flying to right bottom and will out of right bound, correct predict_x
+                    if self.ball_dir == 1 and without_correction_x > GAME_RIGHT_BOUND:
+                        collide_right_bound_y = point_slope_formula_return_y(self.last_ball, self.scene_info["ball"], GAME_RIGHT_BOUND)
+                        delta_x = collide_x - GAME_RIGHT_BOUND
+                        self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (GAME_RIGHT_BOUND + 2 * delta_x, collide_right_bound_y), GAME_TOP_BOUND)
+                    # print(self.predict_ball_x)
                 self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
+                # print("correct prediction", self.predict_ball_x)
                 # if ball is below middle
                 if self.scene_info["ball"][1] > GAME_HALF_HEIGHT and self.will_collide_with_blocker():
                     collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
