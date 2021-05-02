@@ -5,7 +5,7 @@ The template of the script for the machine learning process in game pingpong
 """
 Some constants for calculations
 """
-TREMBLE_WIDTH = 0
+TREMBLE_WIDTH = 2.5
 
 BALL_SIDE = 5
 BALL_HALF_SIDE = BALL_SIDE / 2
@@ -128,7 +128,7 @@ class MLPlay:
         """
         Detect whether the ball will collide with blocker or not
         """
-        ERROR_DISTANCE = abs(self.scene_info["ball_speed"][0])
+        ERROR_DISTANCE = 2 * abs(self.scene_info["ball_speed"][0])
         collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
         delta_frame = abs((GAME_HALF_HEIGHT - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
         displacement = 5 * delta_frame
@@ -179,7 +179,7 @@ class MLPlay:
             # if ball is flying up
             if self.ball_dir == 3 or self.ball_dir == 4:
                 # if ball is below middle, pretend it'll collide with blocker's bottom
-                if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND and self.will_collide_with_blocker():
+                if self.scene_info["ball"][1] > BLOCKER_BOTTOM_BOUND:
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_BOTTOM_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
@@ -230,7 +230,7 @@ class MLPlay:
             # if ball is flying down
             if self.ball_dir == 1 or self.ball_dir == 2:
                 # if ball is above middle, pretend it'll collide with blocker's top
-                if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND and self.will_collide_with_blocker():
+                if self.scene_info["ball"][1] < BLOCKER_TOP_BOUND:
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], BLOCKER_TOP_BOUND)
                     delta_x = collide_x - self.scene_info["ball"][0]
@@ -248,7 +248,8 @@ class MLPlay:
                         delta_x = collide_x - GAME_RIGHT_BOUND
                         self.predict_ball_x = correction((collide_x, BLOCKER_TOP_BOUND), (GAME_RIGHT_BOUND + 2 * delta_x, collide_right_bound_y), GAME_TOP_BOUND)
                     # print(self.predict_ball_x)
-                self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
+                else:
+                    self.predict_ball_x = GAME_HALF_WIDTH - BALL_HALF_SIDE
             # if ball is flying up
             else:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
