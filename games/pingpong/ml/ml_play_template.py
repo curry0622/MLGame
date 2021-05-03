@@ -168,7 +168,7 @@ class MLPlay:
         """
         Detect whether the ball will collide with blocker or not (version 2)
         """
-        ERROR_DISTANCE = 1 * abs(self.scene_info["ball_speed"][0])
+        ERROR_DISTANCE = 0.5 * abs(self.scene_info["ball_speed"][0])
         collide_y = BLOCKER_BOTTOM_BOUND if self.ball_dir == 1 or self.ball_dir == 2 else BLOCKER_TOP_BOUND
         collide_x = correction(self.last_ball, self.scene_info["ball"], collide_y)
         delta_frame = abs((collide_y - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
