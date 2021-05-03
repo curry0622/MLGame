@@ -1,6 +1,8 @@
 """
 The template of the script for the machine learning process in game pingpong
 """
+import os
+import pickle
 
 """
 Some constants for calculations
@@ -78,6 +80,12 @@ class MLPlay:
         """
         self.ball_served = False
         self.side = side
+        self.game_cnt = 0
+        self.record = {
+            "platform_x": [],
+            "predict_ball_x": [],
+            "motion": []
+        }
 
     def update(self, scene_info):
         """
@@ -86,6 +94,25 @@ class MLPlay:
         self.scene_info = scene_info
         if self.scene_info["status"] != "GAME_ALIVE":
             print(self.scene_info["ball_speed"])
+
+            # dump pickle
+            self.game_cnt += 1
+            file_path = ""
+            if self.side == "1P":
+                file_path += "1P/"
+                file_path += "win/" if self.scene_info["ball"][1] < GAME_HALF_HEIGHT else "lose/"
+            else:
+                file_path += "2P/"
+                file_path += "win/" if self.scene_info["ball"][1] > GAME_HALF_HEIGHT else "lose/"
+            file_path += "good/" if abs(self.scene_info["ball_speed"][0]) >= 20 else "bad/"
+            file_path += str(self.game_cnt) + "-" + str(abs(self.scene_info["ball_speed"][0]))
+            with open(os.path.join(os.path.dirname(__file__), "./records/" + file_path + ".pickle"), "wb") as f:
+                pickle.dump(self.record, f)
+                self.record = {
+                    "platform_x": [],
+                    "predict_ball_x": [],
+                    "motion": []
+                }
             return "RESET"
 
         if not self.ball_served:
@@ -99,7 +126,11 @@ class MLPlay:
 
             return "SERVE_TO_RIGHT"
         else:
-            return self.motion()
+            motion = self.motion()
+            self.record["platform_x"].append(self.scene_info["platform_1P"][0] if self.side == "1P" else self.scene_info["platform_2P"][0])
+            self.record["predict_ball_x"].append(self.predict_ball_x)
+            self.record["motion"].append(motion)
+            return motion
 
     def reset(self):
         """
