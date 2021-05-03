@@ -80,7 +80,11 @@ class MLPlay:
         """
         self.ball_served = False
         self.side = side
-        self.game_cnt = 0
+        # self.game_cnt = 0
+        self.win_good_cnt = 0
+        self.win_bad_cnt = 0
+        self.lose_good_cnt = 0
+        self.lose_bad_cnt = 0
         self.record = {
             "platform_x": [],
             "predict_ball_x": [],
@@ -96,16 +100,36 @@ class MLPlay:
             print(self.scene_info["ball_speed"])
 
             # dump pickle
-            self.game_cnt += 1
             file_path = ""
             if self.side == "1P":
                 file_path += "1P/"
-                file_path += "win/" if self.scene_info["ball"][1] < GAME_HALF_HEIGHT else "lose/"
+                if self.scene_info["ball"][1] < GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) >= 20:
+                    self.win_good_cnt += 1
+                    file_path += "win/good/" + str(self.win_good_cnt)
+                elif self.scene_info["ball"][1] > GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) >= 20:
+                    self.lose_good_cnt += 1
+                    file_path += "lose/good/" + str(self.lose_good_cnt)
+                elif self.scene_info["ball"][1] < GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) < 20:
+                    self.win_bad_cnt += 1
+                    file_path += "win/bad/" + str(self.win_bad_cnt)
+                else:
+                    self.lose_bad_cnt += 1
+                    file_path += "lose/bad/" + str(self.lose_bad_cnt)
             else:
                 file_path += "2P/"
-                file_path += "win/" if self.scene_info["ball"][1] > GAME_HALF_HEIGHT else "lose/"
-            file_path += "good/" if abs(self.scene_info["ball_speed"][0]) >= 20 else "bad/"
-            file_path += str(self.game_cnt) + "-" + str(abs(self.scene_info["ball_speed"][0]))
+                if self.scene_info["ball"][1] > GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) >= 20:
+                    self.win_good_cnt += 1
+                    file_path += "win/good/" + str(self.win_good_cnt)
+                elif self.scene_info["ball"][1] < GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) >= 20:
+                    self.lose_good_cnt += 1
+                    file_path += "lose/good/" + str(self.lose_good_cnt)
+                elif self.scene_info["ball"][1] > GAME_HALF_HEIGHT and abs(self.scene_info["ball_speed"][0]) < 20:
+                    self.win_bad_cnt += 1
+                    file_path += "win/bad/" + str(self.win_bad_cnt)
+                else:
+                    self.lose_bad_cnt += 1
+                    file_path += "lose/bad/" + str(self.lose_bad_cnt)
+
             with open(os.path.join(os.path.dirname(__file__), "./records/" + file_path + ".pickle"), "wb") as f:
                 pickle.dump(self.record, f)
                 self.record = {
@@ -113,6 +137,25 @@ class MLPlay:
                     "predict_ball_x": [],
                     "motion": []
                 }
+
+            # dump pickle
+            # self.game_cnt += 1
+            # file_path = ""
+            # if self.side == "1P":
+            #     file_path += "1P/"
+            #     file_path += "win/" if self.scene_info["ball"][1] < GAME_HALF_HEIGHT else "lose/"
+            # else:
+            #     file_path += "2P/"
+            #     file_path += "win/" if self.scene_info["ball"][1] > GAME_HALF_HEIGHT else "lose/"
+            # file_path += "good/" if abs(self.scene_info["ball_speed"][0]) >= 20 else "bad/"
+            # file_path += str(self.game_cnt) + "-" + str(abs(self.scene_info["ball_speed"][0]))
+            # with open(os.path.join(os.path.dirname(__file__), "./records/" + file_path + ".pickle"), "wb") as f:
+            #     pickle.dump(self.record, f)
+            #     self.record = {
+            #         "platform_x": [],
+            #         "predict_ball_x": [],
+            #         "motion": []
+            #     }
             return "RESET"
 
         if not self.ball_served:
