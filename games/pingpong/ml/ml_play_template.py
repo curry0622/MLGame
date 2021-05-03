@@ -5,7 +5,7 @@ The template of the script for the machine learning process in game pingpong
 """
 Some constants for calculations
 """
-TREMBLE_WIDTH = 2.5
+TREMBLE_WIDTH = 5
 
 BALL_SIDE = 5
 BALL_HALF_SIDE = BALL_SIDE / 2
@@ -128,7 +128,7 @@ class MLPlay:
         """
         Detect whether the ball will collide with blocker or not
         """
-        ERROR_DISTANCE = 2 * abs(self.scene_info["ball_speed"][0])
+        ERROR_DISTANCE = 1 * abs(self.scene_info["ball_speed"][0])
         collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
         delta_frame = abs((GAME_HALF_HEIGHT - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
         displacement = 5 * delta_frame
@@ -162,6 +162,33 @@ class MLPlay:
             #     print("collide range", (new_blocker_x - ERROR_DISTANCE, new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE), "collide_x", collide_x)
             #     print("current ball", self.scene_info["ball"])
         # print("won't collide")
+        return False
+
+    def will_collide_with_blocker_v2(self):
+        """
+        Detect whether the ball will collide with blocker or not (version 2)
+        """
+        ERROR_DISTANCE = 1 * abs(self.scene_info["ball_speed"][0])
+        collide_y = BLOCKER_BOTTOM_BOUND if self.ball_dir == 1 or self.ball_dir == 2 else BLOCKER_TOP_BOUND
+        collide_x = correction(self.last_ball, self.scene_info["ball"], collide_y)
+        delta_frame = abs((collide_y - self.scene_info["ball"][1]) / self.scene_info["ball_speed"][1])
+        displacement = 5 * delta_frame
+
+        if self.scene_info["blocker"][0] - self.last_blocker[0] > 0:
+            new_blocker_x = self.scene_info["blocker"][0] + displacement
+            if new_blocker_x > (GAME_WIDTH - BLOCKER_WIDTH):
+                new_blocker_x = (GAME_WIDTH - BLOCKER_WIDTH) - (new_blocker_x - (GAME_WIDTH - BLOCKER_WIDTH))
+            # print("new_blocker_x", new_blocker_x, "new_blocker_right_bound", new_blocker_x + BLOCKER_WIDTH)
+            if collide_x > new_blocker_x - ERROR_DISTANCE and collide_x < new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE:
+                return True
+        # blocker is currently moving left
+        elif self.scene_info["blocker"][0] - self.last_blocker[0] < 0:
+            new_blocker_x = self.scene_info["blocker"][0] - displacement
+            if new_blocker_x < 0:
+                new_blocker_x = 0 - new_blocker_x
+            # print("new_blocker_x", new_blocker_x, "new_blocker_right_bound", new_blocker_x + BLOCKER_WIDTH)
+            if collide_x > new_blocker_x - ERROR_DISTANCE and collide_x < new_blocker_x + BLOCKER_WIDTH + ERROR_DISTANCE:
+                return True
         return False
 
     def predict(self):
@@ -206,7 +233,7 @@ class MLPlay:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
 
                 # if ball is above middle
-                if self.scene_info["ball"][1] < GAME_HALF_HEIGHT and self.will_collide_with_blocker():
+                if self.scene_info["ball"][1] < GAME_HALF_HEIGHT and self.will_collide_with_blocker_v2():
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], GAME_BOTTOM_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
                     delta_x = collide_x - self.predict_ball_x
@@ -255,7 +282,7 @@ class MLPlay:
                 self.predict_ball_x = correction(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
                 # print("correct prediction", self.predict_ball_x)
                 # if ball is below middle
-                if self.scene_info["ball"][1] > GAME_HALF_HEIGHT and self.will_collide_with_blocker():
+                if self.scene_info["ball"][1] > GAME_HALF_HEIGHT and self.will_collide_with_blocker_v2():
                     without_correction_x = point_slope_formula_return_x(self.last_ball, self.scene_info["ball"], GAME_TOP_BOUND)
                     collide_x = correction(self.last_ball, self.scene_info["ball"], GAME_HALF_HEIGHT)
                     delta_x = collide_x - self.predict_ball_x
