@@ -138,24 +138,6 @@ class MLPlay:
                     "motion": []
                 }
 
-            # dump pickle
-            # self.game_cnt += 1
-            # file_path = ""
-            # if self.side == "1P":
-            #     file_path += "1P/"
-            #     file_path += "win/" if self.scene_info["ball"][1] < GAME_HALF_HEIGHT else "lose/"
-            # else:
-            #     file_path += "2P/"
-            #     file_path += "win/" if self.scene_info["ball"][1] > GAME_HALF_HEIGHT else "lose/"
-            # file_path += "good/" if abs(self.scene_info["ball_speed"][0]) >= 20 else "bad/"
-            # file_path += str(self.game_cnt) + "-" + str(abs(self.scene_info["ball_speed"][0]))
-            # with open(os.path.join(os.path.dirname(__file__), "./records/" + file_path + ".pickle"), "wb") as f:
-            #     pickle.dump(self.record, f)
-            #     self.record = {
-            #         "platform_x": [],
-            #         "predict_ball_x": [],
-            #         "motion": []
-            #     }
             return "RESET"
 
         if not self.ball_served:
