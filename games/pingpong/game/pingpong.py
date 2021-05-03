@@ -7,6 +7,8 @@ class PingPong:
         self._score = [0, 0]    # 1P, 2P
         self._game_over_score = game_over_score
         self._scene = Scene(difficulty)
+        self._avg_speed = 0
+        self._game_cnt = 0
 
         self._pygame_init()
 
@@ -32,9 +34,13 @@ class PingPong:
         self._draw_screen()
 
         if game_status != GameStatus.GAME_ALIVE:
+            self._game_cnt += 1
+            self._avg_speed += abs(self._scene._ball.speed[0])
             print(game_status.value)
             if self._game_over(game_status):
+                self._avg_speed /= self._game_cnt
                 self._print_result()
+                print("Average speed is", self._avg_speed)
                 return "QUIT"
 
             return "RESET"
