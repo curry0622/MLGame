@@ -7,6 +7,7 @@ class MLPlay:
         """
         Constructor
         """
+        self.reach_bottom = False
         pass
 
     def update(self, scene_info):
@@ -14,6 +15,7 @@ class MLPlay:
         Generate the command according to the received scene information
         """
         if scene_info["status"] == "GAME_OVER":
+            self.reach_bottom = False
             return "RESET"
 
         # set scene info
@@ -21,19 +23,12 @@ class MLPlay:
 
         # set useful info
         self.head = scene_info["snake_head"]
-        self.neck = scene_info["snake_body"][1]
+        self.neck = scene_info["snake_body"][0]
         self.food = scene_info["food"]
         self.set_dir()
+        self.set_move()
 
-        return self.dir
-        # if snake_head[0] > food[0]:
-        #     return "LEFT"
-        # elif snake_head[0] < food[0]:
-        #     return "RIGHT"
-        # elif snake_head[1] > food[1]:
-        #     return "UP"
-        # elif snake_head[1] < food[1]:
-        #     return "DOWN"
+        return self.move
 
     def reset(self):
         """
@@ -48,4 +43,36 @@ class MLPlay:
             self.dir = "DOWN"
         elif self.head[1] == self.neck[1] and self.head[0] < self.neck[0]:
             self.dir = "LEFT"
-        self.dir = "RIGHT"
+        elif self.head[1] == self.neck[1] and self.head[0] > self.neck[0]:
+            self.dir = "RIGHT"
+        else:
+            print('head', self.head)
+            print('neck', self.neck)
+            print('all', self.scene_info["snake_body"])
+
+    def set_move(self):
+        if self.head[1] == 290 and self.head[0] == 290:
+            self.move = "LEFT"
+        # at bottom && not at leftmost
+        elif self.head[1] == 290 and self.head[0] != 0:
+            self.move = "LEFT"
+        # at bottom && at leftmost
+        elif self.head[1] == 290 and self.head[0] == 0:
+            self.move = "UP"
+        # at top && at leftmost
+        elif self.head[1] == 0 and self.head[0] == 0:
+            self.move = "RIGHT"
+        # at top && x is at even column
+        elif self.head[1] == 0 and self.head[0] % 20 != 0:
+            self.move = "DOWN"
+        # at top && x is at odd column
+        elif self.head[1] == 0 and self.head[0] % 20 == 0:
+            self.move = "RIGHT"
+        # at bottom - 1 && at even column && not rightmost
+        elif self.head[1] == 280 and self.head[0] % 20 != 0 and self.head[0] != 290:
+            self.move = "RIGHT"
+        # at bottom - 1 && at odd column
+        elif self.head[1] == 280 and self.head[0] % 20 == 0:
+            self.move = "UP"
+        else:
+            self.move = self.dir
