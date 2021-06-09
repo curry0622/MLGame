@@ -2,12 +2,24 @@
 The template of the script for playing the game in the ml mode
 """
 
+import os
+import pickle
+
 class MLPlay:
     def __init__(self):
         """
         Constructor
         """
         self.reach_bottom = False
+        self.record = {
+            "x": [],
+            "y": [],
+            # "p_x": [],
+            # "p_y": [],
+            "dir": [],
+            "odd": [],
+            "move": []
+        }
         pass
 
     def update(self, scene_info):
@@ -27,6 +39,32 @@ class MLPlay:
         self.food = scene_info["food"]
         self.set_dir()
         self.set_move()
+        self.set_predict()
+        # print(self.head, self.move, (self.predict_x, self.predict_y))
+
+        # record info
+        self.record["x"].append(self.head[0])
+        self.record["y"].append(self.head[1])
+        # self.record["p_x"].append(self.predict_x)
+        # self.record["p_y"].append(self.predict_y)
+        self.record["dir"].append(self.dir)
+        self.record["odd"].append(1 if self.head[0] % 20 == 0 else 0)
+        self.record["move"].append(self.move)
+
+        # dump pickle
+        if self.scene_info["frame"] == 10000:
+            with open(os.path.join(os.path.dirname(__file__), "./pickles/test.pickle"), "wb") as f:
+                pickle.dump(self.record, f)
+                print("data collected")
+                self.record = {
+                    "x": [],
+                    "y": [],
+                    # "p_x": [],
+                    # "p_y": [],
+                    "dir": [],
+                    "odd": [],
+                    "move": []
+                }
 
         return self.move
 
@@ -45,10 +83,6 @@ class MLPlay:
             self.dir = "LEFT"
         elif self.head[1] == self.neck[1] and self.head[0] > self.neck[0]:
             self.dir = "RIGHT"
-        else:
-            print('head', self.head)
-            print('neck', self.neck)
-            print('all', self.scene_info["snake_body"])
 
     def set_move(self):
         if self.head[1] == 290 and self.head[0] == 290:
@@ -76,3 +110,17 @@ class MLPlay:
             self.move = "UP"
         else:
             self.move = self.dir
+
+    def set_predict(self):
+        if self.move == "UP":
+            self.predict_x = self.head[0]
+            self.predict_y = self.head[1] - 10
+        elif self.move == "DOWN":
+            self.predict_x = self.head[0]
+            self.predict_y = self.head[1] + 10
+        elif self.move == "LEFT":
+            self.predict_x = self.head[0] - 10
+            self.predict_y = self.head[1]
+        else:
+            self.predict_x = self.head[0] + 10
+            self.predict_y = self.head[1]
