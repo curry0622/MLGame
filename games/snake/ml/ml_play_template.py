@@ -62,19 +62,19 @@ class MLPlay:
         self.record["move"].append(self.move)
 
         # dump pickle
-        if self.scene_info["frame"] == 10000:
-            with open(os.path.join(os.path.dirname(__file__), "./pickles/test.pickle"), "wb") as f:
-                pickle.dump(self.record, f)
-                print("data collected")
-                self.record = {
-                    "x": [],
-                    "y": [],
-                    # "p_x": [],
-                    # "p_y": [],
-                    "dir": [],
-                    "odd": [],
-                    "move": []
-                }
+        # if self.scene_info["frame"] == 10000:
+        #     with open(os.path.join(os.path.dirname(__file__), "./pickles/test.pickle"), "wb") as f:
+        #         pickle.dump(self.record, f)
+        #         print("data collected")
+        #         self.record = {
+        #             "x": [],
+        #             "y": [],
+        #             # "p_x": [],
+        #             # "p_y": [],
+        #             "dir": [],
+        #             "odd": [],
+        #             "move": []
+        #         }
 
         return self.move
 
