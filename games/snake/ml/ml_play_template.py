@@ -20,6 +20,7 @@ class MLPlay:
             "odd": [],
             "move": []
         }
+        self.point = 0
         pass
 
     def update(self, scene_info):
@@ -28,7 +29,12 @@ class MLPlay:
         """
         if scene_info["status"] == "GAME_OVER":
             self.reach_bottom = False
+            self.point = 0
             return "RESET"
+
+        # reset game
+        if self.point >= 31:
+            return "RIGHT"
 
         # set scene info
         self.scene_info = scene_info
@@ -41,6 +47,10 @@ class MLPlay:
         self.set_move()
         self.set_predict()
         # print(self.head, self.move, (self.predict_x, self.predict_y))
+
+        # record point
+        if self.predict_x == self.scene_info["food"][0] and self.predict_y == self.scene_info["food"][1]:
+            self.point += 1
 
         # record info
         self.record["x"].append(self.head[0])
